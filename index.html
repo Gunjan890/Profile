@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>MAHESH — MS</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Grotesk:wght@300;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#071021;
+      --card:#08221a;
+      --neon-green: #00ff6a;
+      --neon-blue: #22d1ff;
+      --neon-pink: #ff3f7a;
+      --muted: rgba(255,255,255,0.7);
+    }
+
+    /* Basic resets */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:#dfeef6;
+      font-family:"Space Grotesk",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    /* Canvas: background animation */
+    #bg-canvas{
+      position:fixed;
+      inset:0;
+      z-index:0;
+      display:block;
+      width:100%;
+      height:100%;
+    }
+
+    /* overlay grid for subtle tech look */
+    .grid-overlay{
+      position:fixed;
+      inset:0;
+      z-index:1;
+      pointer-events:none;
+      background-image:
+        linear-gradient(90deg, rgba(0,255,120,0.02) 1px, transparent 1px),
+        linear-gradient(rgba(0,255,120,0.01) 1px, transparent 1px);
+      background-size: 160px 100%, 100% 120px;
+      mix-blend-mode:overlay;
+    }
+
+    /* content wrapper */
+    .wrap{
+      position:relative;
+      z-index:2;
+      max-width:980px;
+      margin:20px auto 80px;
+      padding:18px;
+    }
+
+    /* top bar */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 18px;
+      border-radius:8px;
+      border:1px solid rgba(0,255,120,0.08);
+      background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.2));
+      box-shadow:0 10px 40px rgba(0,0,0,0.6);
+      margin-bottom:18px;
+    }
+    .logo{
+      font-family:'Share Tech Mono', monospace;
+      color:var(--neon-green);
+      font-size:30px;
+      letter-spacing:2px;
+      text-shadow:
+        0 0 10px rgba(0,255,120,0.9),
+        0 0 30px rgba(0,255,120,0.25);
+    }
+    .logo small{ display:block; font-size:11px; opacity:.7; color:#bfe9d0; font-family:inherit; letter-spacing:1px; margin-top:2px;}
+
+    /* hero */
+    .hero{
+      text-align:center;
+      margin:8px 0 28px;
+    }
+    .hero h1{
+      font-family:'Share Tech Mono', monospace;
+      color:var(--neon-green);
+      font-size:46px;
+      margin:10px 0 6px;
+      text-shadow: 0 0 12px rgba(0,255,120,0.95);
+      letter-spacing:3px;
+    }
+    .lead{
+      color:rgba(255,255,255,0.65);
+      max-width:760px;
+      margin:8px auto;
+      font-size:15px;
+      line-height:1.6;
+      letter-spacing:0.6px;
+    }
+
+    /* profile card */
+    .profile-card{
+      border-radius:14px;
+      padding:16px;
+      background:linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.06));
+      border:2px solid rgba(0,255,120,0.08);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+      margin-bottom:22px;
+    }
+    .avatar{
+      width:160px;height:160px;border-radius:50%;margin:6px auto 12px;display:block;padding:6px;border:3px solid rgba(0,255,120,0.10);
+      background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.02), rgba(0,0,0,0.2));
+      box-shadow: 0 0 28px rgba(0,255,120,0.08);
+    }
+    .avatar img{ width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
+
+    /* faux terminal */
+    .terminal{
+      background:#000;
+      color:var(--neon-green);
+      font-family:'Share Tech Mono', monospace;
+      border-radius:12px;
+      padding:14px;
+      margin:12px auto;
+      max-width:900px;
+      line-height:1.6;
+      border:3px solid rgba(0,255,120,0.08);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 0 24px rgba(0,255,120,0.02);
+    }
+    .term-title{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+    .term-dots{height:9px;width:9px;border-radius:50%;background:#ff3f7a; box-shadow:0 0 10px rgba(255,63,122,0.45)}
+
+    /* section header */
+    .section-title{
+      text-align:center;
+      font-family:'Share Tech Mono', monospace;
+      color:var(--neon-green);
+      font-size:30px;
+      margin:26px 0 14px;
+      text-shadow: 0 0 10px rgba(0,255,120,0.9);
+      letter-spacing:2px;
+    }
+
+    /* card container */
+    .card{
+      background: linear-gradient(180deg, rgba(0,20,14,0.65), rgba(4,40,30,0.65));
+      border-radius:12px;
+      padding:18px;
+      border:1.8px solid rgba(0,255,120,0.07);
+      margin:18px 0;
+    }
+
+    .card h3{
+      font-family:'Share Tech Mono', monospace;
+      color:var(--neon-pink);
+      font-size:22px;
+      margin:6px 0 16px;
+      text-align:center;
+      text-shadow: 0 0 10px rgba(255,63,122,0.85);
+    }
+
+    /* progress bars */
+    .skill-row{display:flex;justify-content:space-between;align-items:center;font-family:'Share Tech Mono', monospace;margin-bottom:8px;color:rgba(255,255,255,0.85)}
+    .progress{height:18px;background:rgba(255,255,255,0.03); border-radius:999px; overflow:hidden; border:1px solid rgba(0,0,0,0.25)}
+    .progress > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--neon-green),var(--neon-blue)); box-shadow:0 6px 20px rgba(0,255,120,0.12)}
+
+    /* big neon centered titles (like CONNECT / SKILL_SET) */
+    .neon-title{
+      font-family:'Share Tech Mono', monospace;
+      text-align:center;
+      font-size:40px;
+      color:var(--neon-green);
+      margin:26px 0 10px;
+      text-shadow:0 0 12px rgba(0,255,120,0.9), 0 0 30px rgba(0,255,120,0.2);
+      letter-spacing:3px;
+    }
+
+    /* big CTA buttons */
+    .btn-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+    .btn{
+      padding:14px 26px;border-radius:40px;font-family:'Share Tech Mono',monospace;font-weight:600;text-transform:uppercase;letter-spacing:1.8px;border:none;cursor:pointer;
+      box-shadow:0 18px 44px rgba(0,0,0,0.6);
+    }
+    .btn.cta{background:linear-gradient(90deg,var(--neon-green),var(--neon-blue)); color:#001410}
+    .btn.link{background:linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01)); color:#bfe8ff; border:1px solid rgba(255,255,255,0.03)}
+
+    /* badges/pills */
+    .pill{display:inline-block;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.03);font-family:'Share Tech Mono',monospace;margin-right:8px;margin-bottom:6px}
+
+    /* footer */
+    footer{ text-align:center;color:rgba(255,255,255,0.45); margin-top:28px;font-size:13px}
+
+    /* responsive */
+    @media(min-width:900px){
+      .hero h1{font-size:56px}
+      .wrap{padding:28px}
+    }
+
+    /* small neon glow effect for headings inside cards (colored) */
+    .glow-blue{color:var(--neon-blue); text-shadow:0 0 14px rgba(34,209,255,0.95)}
+    .glow-green{color:var(--neon-green); text-shadow:0 0 14px rgba(0,255,120,0.95)}
+    .glow-pink{color:var(--neon-pink); text-shadow:0 0 14px rgba(255,63,122,0.95)}
+  </style>
+</head>
+<body>
+
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+<div class="grid-overlay" aria-hidden="true"></div>
+
+<div class="wrap" role="main">
+  <!-- topbar -->
+  <header class="topbar" role="banner">
+    <div>
+      <div class="logo">         MAHESH MS
+        <small>              mahesh.bio   </small>
+      </div>
+    </div>
+    <div style="color:rgba(255,255,255,0.9); font-family:'Share Tech Mono', monospace;"></div>
+  </header>
+
+  <!-- hero -->
+  <section class="hero" aria-label="introduction">
+    <h1> DETAILS </h1>
+    <p class="lead">Ready to collaborate? 
+      <p class="lead">Let's build something amazing together.</p>
+  </section>
+
+  <!-- profile card -->
+  <section class="profile-card" aria-label="profile">
+    <div class="avatar" aria-label="avatar">
+  <img src="https://iili.io/K8UubuS.jpg"
+  <img src="data:image/svg+xml;utf8,
+    <svg xmlns='https://freeimage.host/i/K8UubuS' width='400' height='400'>
+      <rect rx='200' ry='200' width='400' height='400' fill='%23111111'/>
+      <g transform ='translate(40,40)'>
+        <circle cx='160' cy='80' r='60' fill='%23f3f3f3'/>
+        <path d='M20 260 C60 200 260 200 300 260 L300 320 L20 320 Z' fill='%236b8db3' />
+      </g>
+    </svg>" alt="avatar" />
+</div>
+
+    <div class="terminal" role="region" aria-label="intro terminal">
+      <div class="term-title">
+        <div class="term-dots" aria-hidden="true"></div>
+        <div style="font-family:'Share Tech Mono',monospace;color:rgba(255,255,255,0.85)">WHO AM I</div>
+      </div>
+
+      <div style="text-align:center; font-family:'Share Tech Mono',monospace;font-size:28px; color:var(--neon-green); text-align:center; margin:6px 0 10px; text-shadow:0 0 10px rgba(0,255,120,0.9)">
+        MAHESH
+      </div>
+
+      <div style="text-align:center; font-family:'Share Tech Mono',monospace;color:#9fdcff">
+        &gt; Web Developer<br>&gt; Ethical Hacker<br>&gt; Bot devloper<br>&gt; Cybersecurity Expert
+      </div>
+    </div>
+
+    <div class="btn-row" role="navigation" aria-label="call to actions" style="margin-top:12px">
+      <button class="btn cta" onclick="window.open('https://t.me/its_mahesh_ms','_blank')">
+        ▶ CONTACT ON TELEGRAM
+      </button>
+      <button class="btn link" onclick="document.getElementById('portfolio').scrollIntoView({behavior:'smooth'})">
+        ↳ VIEW PROFILE 
+      </button>
+    </div>
+  </section>
+
+  <!-- availability -->
+  <h2 class="section-title">AVAILABILITY STATUS</h2>
+  <section class="card" aria-label="availability card">
+    <div class="terminal" style="margin:0">
+      <div style="font-family:'Share Tech Mono', monospace; color:var(--neon-green)"></div>
+      <div style="margin-top:12px;font-family:'Share Tech Mono',monospace;color:var(--muted)">
+        <div><span style="color:var(--neon-green)">●</span> Status: <strong style="color:var(--neon-green)">ONLINE</strong></div>
+        <div style="margin-top:8px"><span style="color:var(--neon-blue)">●</span> Response Time: &lt; 2 minutes</div>
+        <div style="margin-top:8px"><span style="color:gold">●</span> Current Projects: 10+ active</div>
+        <div style="margin-top:8px"><span style="color:plum">●</span> Available for: Web Dev, Security Audits, Gaming</div>
+      </div>
+
+      <div style="margin-top:14px;color:var(--neon-blue); font-family:'Share Tech Mono', monospace;">Ready for new challenges!"</div>
+      <div style="color:var(--neon-green); font-family:'Share Tech Mono', monospace; margin-top:6px;">Ready for new challenges!</div>
+    </div>
+  </section>
+
+  <!-- skills / stats -->
+  <h2 class="neon-title">SKILL</h2>
+  <section id="portfolio" class="card" aria-label="skills">
+    <div style="display:grid;grid-template-columns:1fr;gap:18px">
+      <!-- Web Dev -->
+      <div>
+        <div style="text-align:center; font-family:'Share Tech Mono',monospace; color:var(--neon-blue); font-size:22px; margin-bottom:12px; text-shadow:0 0 10px rgba(34,209,255,0.9)">WEB DEV</div>
+        <div class="skill-row"><div>React.js</div><div>95%</div></div>
+        <div class="progress" aria-hidden="true"><i style="width:95%"></i></div>
+
+        <div class="skill-row" style="margin-top:12px"><div>Node.js</div><div>90%</div></div>
+        <div class="progress" aria-hidden="true"><i style="width:90%"></i></div>
+
+        <div class="skill-row" style="margin-top:12px"><div>Python</div><div>88%</div></div>
+        <div class="progress" aria-hidden="true"><i style="width:88%"></i></div>
+      </div>
+
+      <!-- Ethical Hack -->
+      <div>
+        <div style="text-align:center; font-family:'Share Tech Mono',monospace; color:var(--neon-pink); font-size:22px; margin-bottom:12px; text-shadow:0 0 10px rgba(255,63,122,0.9)">ETHICAL HACK</div>
+        <div class="skill-row"><div>Penetration Testing</div><div>92%</div></div>
+        <div class="progress" aria-hidden="true"><i style="width:92%"></i></div>
+
+        <div class="skill-row" style="margin-top:12px"><div>Network Security</div><div>87%</div></div>
+        <div class="progress" aria-hidden="true"><i style="width:87%"></i></div>
+
+        <div class="skill-row" style="margin-top:12px"><div>OSINT</div><div>85%</div></div>
+        <div class="progress" aria-hidden="true"><i style="width:85%"></i></div>
+      </div>
+
+      <!-- SKILL -->
+      <div>
+        <div style="text-align:center; font-family:'Share Tech Mono',monospace; color:var(--neon-green); font-size:22px; margin-bottom:12px; text-shadow:0 0 10px rgba(0,255,120,0.9)">SKILL</div>
+        <div class="skill-row"><div>Termux</div><div>70%</div></div>
+        <div class="progress" aria-hidden="true"><i style="width:70%"></i></div>
+
+        <div class="skill-row" style="margin-top:12px"><div>Python</div><div>60%</div></div>
+        <div class="progress" aria-hidden="true"><i style="width:60%"></i></div>
+
+        <div class="skill-row" style="margin-top:12px"><div>php</div><div>30%</div></div>
+        <div class="progress" aria-hidden="true"><i style="width:30%"></i></div>
+      </div>
+
+      <!-- Live terminal example -->
+      <div>
+        <div style="text-align:center; font-family:'Share Tech Mono',monospace; color:var(--neon-green); font-size:22px; margin-bottom:12px; text-shadow:0 0 10px rgba(0,255,120,0.9)">LIVE TERMINAL SESSION</div>
+        <div class="terminal" style="margin:0">
+          <div>
+          <div style="margin-top:8px;color:var(--muted)">Starting Nmap scan...</div>
+          <div style="margin-top:8px;color:var(--neon-green)">22/tcp open ssh</div>
+          <div style="color:var(--neon-green)">80/tcp open http</div>
+          <div style="color:var(--neon-green)">8080/tcp open http</div>
+          <div style="color:var(--neon-green)">800/tcp open http</div>
+          <div style="margin-top:8px;color:var(--neon-blue)">Scan completed successfully</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- pentest / tech stack -->
+  <h2 class="section-title">PENTEST TOOLKIT</h2>
+  <section class="card" aria-label="pentest">
+    <p style="color:rgba(255,255,255,0.9); margin-bottom:12px">Custom penetration testing suite for ethical hacking and security assessments.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="pill" style="color:#ff8a91;border-color:rgba(255,63,122,0.08)">Python</span>
+      <span class="pill" style="color:#c9b3ff;border-color:rgba(160,120,255,0.08)">Kali Linux</span>
+      <span class="pill" style="color:#c9b3ff;border-color:rgba(160,120,255,0.08)">Termux</span>
+      <span class="pill" style="color:#ffd27a;border-color:rgba(255,200,60,0.08)">OSINT</span>
+    </div>
+  </section>
+
+  <footer>
+    <div>© 2024 MAHESH — All systems operational</div>
+    <div style="margin-top:8px;color:rgba(255,255,255,0.2)"></div>
+  </footer>
+</div>
+
+<!-- Background Canvas Script: electric arcs + subtle matrix -->
+<script>
+/*
+  Canvas background combines:
+   - slow drifting particles
+   - electric arcs between close particles (neon)
+   - faint vertical matrix-like characters
+
+  Tuned for performance on mobile.
+*/
+
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d', {alpha:true});
+  let W = canvas.width = innerWidth;
+  let H = canvas.height = innerHeight;
+  const DPR = Math.max(1, window.devicePixelRatio || 1);
+  canvas.width = W * DPR; canvas.height = H * DPR; canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.scale(DPR, DPR);
+
+  // particles
+  const count = Math.max(28, Math.floor(W / 28));
+  const particles = [];
+  for(let i=0;i<count;i++){
+    particles.push({
+      x: Math.random()*W,
+      y: Math.random()*H,
+      vx: (Math.random()-0.5)*0.5,
+      vy: (Math.random()-0.5)*0.3,
+      r: 1 + Math.random()*2,
+      glow: 0.5 + Math.random()*0.8,
+      hue: 160 + Math.random()*80 // green -> cyan
+    });
+  }
+
+  // matrix chars positions (vertical columns)
+  const chars = '01<>/\\|{}[]()+=-*~';
+  const fontSize = Math.max(10, Math.round(W/120));
+  const cols = Math.floor(W / fontSize);
+  const drops = new Array(cols).fill(0).map(()=> Math.random()*H);
+
+  function resize(){
+    W = canvas.width = innerWidth;
+    H = canvas.height = innerHeight;
+    canvas.width = W * DPR; canvas.height = H * DPR; canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.scale(DPR, DPR);
+  }
+  window.addEventListener('resize', ()=> {
+    resize();
+  });
+
+  let t = 0;
+  function loop(){
+    t += 1/60;
+    // translucent bg to create trails
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = 'rgba(4,8,12,0.42)';
+    ctx.fillRect(0,0,W,H);
+
+    // faint matrix vertical characters
+    ctx.font = fontSize + 'px monospace';
+    for(let i=0;i<drops.length;i++){
+      const x = i*fontSize;
+      const y = drops[i]*fontSize;
+      ctx.fillStyle = 'rgba(0,255,120,0.03)';
+      const ch = chars.charAt(Math.floor(Math.random()*chars.length));
+      ctx.fillText(ch, x, y);
+      if(y > H && Math.random() > 0.975) drops[i] = 0;
+      drops[i] += 0.6 + Math.random()*0.8;
+    }
+
+    // particles
+    for(let i=0;i<particles.length;i++){
+      const p = particles[i];
+      // oscillating motion
+      p.x += p.vx + Math.sin(t*0.5 + i)*0.2;
+      p.y += p.vy + Math.cos(t*0.3 + i)*0.1;
+
+      // wrap
+      if(p.x < -20) p.x = W + 20;
+      if(p.x > W + 20) p.x = -20;
+      if(p.y < -20) p.y = H + 20;
+      if(p.y > H + 20) p.y = -20;
+
+      // draw neon dot
+      const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*8);
+      gradient.addColorStop(0, `hsla(${p.hue}, 100%, 60%, ${0.9*p.glow})`);
+      gradient.addColorStop(0.3, `hsla(${p.hue}, 100%, 55%, ${0.25*p.glow})`);
+      gradient.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.beginPath();
+      ctx.fillStyle = gradient;
+      ctx.arc(p.x, p.y, p.r*6, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.fillStyle = `hsla(${p.hue},100%,60%,${0.9})`;
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // electric arcs between nearby particles
+    for(let i=0;i<particles.length;i++){
+      const a = particles[i];
+      for(let j=i+1;j<particles.length;j++){
+        const b = particles[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const d2 = dx*dx + dy*dy;
+        if(d2 < 9000){ // threshold for linking (tune for density)
+          const dist = Math.sqrt(d2);
+          const alpha = 0.14 * (1 - dist/95);
+          if(alpha <= 0) continue;
+          // stroke color blends based on average hue
+          const h = Math.round((a.hue + b.hue)/2);
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          // slight wobble for electric feel
+          const mx = (a.x + b.x)/2 + Math.sin(t*5 + i*3)*6;
+          const my = (a.y + b.y)/2 + Math.cos(t*4 + j*2)*4;
+          ctx.quadraticCurveTo(mx, my, b.x, b.y);
+          ctx.strokeStyle = `hsla(${h},100%,60%,${alpha})`;
+          ctx.lineWidth = 1;
+          ctx.shadowColor = `hsla(${h},100%,60%,${alpha*1.3})`;
+          ctx.shadowBlur = 8;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+      }
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+})();
+</script>
+</body>
+</html>
